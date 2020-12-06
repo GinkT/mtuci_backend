@@ -1,0 +1,47 @@
+version: "3"
+
+services:
+  mtuci_backend:
+    build:
+      context: ./..
+      dockerfile: deployments/Dockerfile
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../config/config.env
+    depends_on:
+      - mongo
+      - mongo-express
+    links:
+      - "mongo"
+    networks:
+      - mtuci_network
+    stop_grace_period: 30s
+    stop_signal: SIGTERM
+    restart: always
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - mtuci_network
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+    networks:
+      - mtuci_network
+    depends_on:
+      - mongo
+
+networks:
+  mtuci_network:
+    driver: bridge
